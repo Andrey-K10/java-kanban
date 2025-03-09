@@ -1,3 +1,5 @@
+package Model;
+
 import java.util.Objects;
 
 public class Task {
@@ -6,7 +8,7 @@ public class Task {
     private String description;
     private Status status;
 
-    //конструктор который делает Task
+    //конструктор который делает Model.Task
     public Task(int id, String name, String description, Status status) {
         this.id = id;
         this.name = name;
@@ -64,7 +66,7 @@ public class Task {
     // вывод в строку всех данных по таску
     @Override
     public String toString() {
-        return "Task{" +
+        return "Model.Task{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

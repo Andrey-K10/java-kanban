@@ -1,3 +1,9 @@
+import Model.Epic;
+import Model.Status;
+import Model.Subtask;
+import Model.Task;
+import Сontrollers.TaskManager;
+
 public class Main {
     public static void main(String[] args) {
         TaskManager manager = new TaskManager();
@@ -16,7 +22,7 @@ public class Main {
         int task2Id = manager.createTask(task2);
 
         // Эпик с двумя подзадачами
-        Epic epic3 = new Epic(0, "Эпик 3", "Описание эпика 3", Status.NEW);
+        Epic epic3 = new Epic(0, "Эпик 3", "Описание эпика 3");
         int epic3Id = manager.createEpic(epic3);
 
         Subtask subtask4 = new Subtask(0, "Подзадача 4", "Описание подзадачи 4", Status.NEW, epic3Id);
@@ -25,7 +31,7 @@ public class Main {
         int subtask5Id = manager.createSubtask(subtask5);
 
         // Создаем эпик с одной подзадачей
-        Epic epic6 = new Epic(0, "Эпик 6", "Описание эпика 6", Status.NEW);
+        Epic epic6 = new Epic(0, "Эпик 6", "Описание эпика 6");
         int epic6Id = manager.createEpic(epic6);
 
         Subtask subtask7 = new Subtask(0, "Подзадача 7", "Описание подзадачи 7", Status.NEW, epic6Id);
