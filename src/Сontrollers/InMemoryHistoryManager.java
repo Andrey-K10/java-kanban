@@ -16,13 +16,11 @@ public class InMemoryHistoryManager implements HistoryManager {
             return;
         }
 
-        // Удаляем задачу, если она уже есть в истории
-        history.remove(task);
 
-        // Добавляем задачу в конец списка
-        history.addLast(task);
+                history.remove(task);
 
-        // Если размер истории превышает максимальный, удаляем самый старый элемент
+                history.addLast(copyTask(task));
+
         if (history.size() > MAX_HISTORY_SIZE) {
             history.removeFirst();
         }
@@ -31,5 +29,10 @@ public class InMemoryHistoryManager implements HistoryManager {
     @Override
     public List<Task> getHistory() {
         return new ArrayList<>(history); // Возвращаем копию списка
+    }
+
+
+    private Task copyTask(Task task) {
+        return new Task(task.getId(), task.getName(), task.getDescription(), task.getStatus());
     }
 }
