@@ -2,11 +2,12 @@ import Model.Epic;
 import Model.Status;
 import Model.Subtask;
 import Model.Task;
+import Сontrollers.Managers;
 import Сontrollers.TaskManager;
 
 public class Main {
     public static void main(String[] args) {
-        TaskManager manager = new TaskManager();
+        TaskManager manager = Managers.getDefault();
 
         /*
         Создаем следующие данные для теста:
@@ -125,6 +126,13 @@ public class Main {
         System.out.println(manager.getTaskById(1));
         System.out.println(manager.getEpicById(6));
         System.out.println(manager.getSubtaskById(7));
+
+
+        // Получение истории просмотров
+        System.out.println("\nИстория просмотров:");
+        for (Task task : manager.getHistory()) {
+            System.out.println(task);
+        }
 
         System.out.println("\n-----------------------");
         System.out.println("Конец теста");
