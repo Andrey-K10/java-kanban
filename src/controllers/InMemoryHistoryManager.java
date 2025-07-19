@@ -1,7 +1,6 @@
 package controllers;
 
 import model.Task;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +13,9 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node next;
 
         Node(Task task, Node prev, Node next) {
-            this.task = task;
+            // Создаем копию задачи для иммутабельности
+            this.task = new Task(task.getId(), task.getName(),
+                    task.getDescription(), task.getStatus());
             this.prev = prev;
             this.next = next;
         }

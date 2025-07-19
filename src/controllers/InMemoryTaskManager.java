@@ -43,9 +43,17 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int createTask(Task task) {
-        task.setId(nextId++);
-        tasks.put(task.getId(), task);
-        return task.getId();
+        Task copy = copyTask(task);
+        if (copy.getId() == 0) {
+            copy.setId(nextId++);
+        }
+        tasks.put(copy.getId(), copy);
+        return copy.getId();
+    }
+
+    private Task copyTask(Task task) {
+        return new Task(task.getId(), task.getName(),
+                task.getDescription(), task.getStatus());
     }
 
     @Override
