@@ -1,44 +1,73 @@
 package Сontrollers;
 
-import Model.Task;
-import Model.Epic;
-import Model.Subtask;
-import Model.Status;
-import org.junit.jupiter.api.Test;
+import Model.*;
+import org.junit.jupiter.api.*;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryTaskManagerTest {
+    private TaskManager taskManager;
 
-    @Test
-    void tasksShouldBeAddedAndFoundById() { // проверьте, что InMemoryTaskManager действительно добавляет задачи разного типа и может найти их по id;
-        TaskManager taskManager = Managers.getDefault();
-
-        Task task = new Task(1, "Task 1", "Description 1", Status.NEW);
-        taskManager.createTask(task);
-
-        Epic epic = new Epic(2, "Epic 1", "Description 1");
-        taskManager.createEpic(epic);
-
-        Subtask subtask = new Subtask(3, "Subtask 1", "Description 1", Status.NEW, epic.getId());
-        taskManager.createSubtask(subtask);
-
-        assertEquals(task, taskManager.getTaskById(1), "Задача должна быть найдена по id.");
-        assertEquals(epic, taskManager.getEpicById(2), "Эпик должен быть найден по id.");
-        assertEquals(subtask, taskManager.getSubtaskById(3), "Подзадача должна быть найдена по id.");
+    @BeforeEach
+    void setUp() {
+        taskManager = Managers.getDefault();
     }
 
     @Test
-    void taskShouldRemainUnchangedAfterAddingToManager() { // создайте тест, в котором проверяется неизменность задачи (по всем полям) при добавлении задачи в менеджер
-        TaskManager taskManager = Managers.getDefault();
+    void createTaskShouldGenerateIdIfZero() {
+        Task task = new Task(0, "Task", "Desc", Status.NEW);
+        int id = taskManager.createTask(task);
 
-        Task task = new Task(1, "Task 1", "Description 1", Status.NEW);
-        int taskId = taskManager.createTask(task);
+        assertNotEquals(0, id);
+        assertEquals(id, task.getId());
+    }
 
-        Task savedTask = taskManager.getTaskById(taskId);
+    @Test
+    void deleteEpicShouldRemoveItsSubtasks() {
+        Epic epic = new Epic(1, "Epic", "Desc");
+        taskManager.createEpic(epic);
 
-        assertEquals(task.getId(), savedTask.getId(), "Id задачи не должен изменяться.");
-        assertEquals(task.getName(), savedTask.getName(), "Название задачи не должно изменяться.");
-        assertEquals(task.getDescription(), savedTask.getDescription(), "Описание задачи не должно изменяться.");
-        assertEquals(task.getStatus(), savedTask.getStatus(), "Статус задачи не должен изменяться.");
+        Subtask subtask = new Subtask(2, "Subtask", "Desc", Status.NEW, epic.getId());
+        taskManager.createSubtask(subtask);
+
+        taskManager.deleteEpicById(epic.getId());
+
+        assertNull(taskManager.getSubtaskById(subtask.getId()));
+        assertNull(taskManager.getEpicById(epic.getId()));
+    }
+
+    @Test
+    void updateSubtaskShouldAffectEpicStatus() {
+        Epic epic = new Epic(1, "Epic", "Desc");
+        taskManager.createEpic(epic);
+
+        Subtask subtask = new Subtask(2, "Subtask", "Desc", Status.NEW, epic.getId());
+        taskManager.createSubtask(subtask);
+
+        subtask.setStatus(Status.DONE);
+        taskManager.updateSubtask(subtask);
+
+        assertEquals(Status.DONE, taskManager.getEpicById(epic.getId()).getStatus());
+    }
+
+    @Test
+    void shouldNotAllowSubtaskToBeItsOwnEpic() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Subtask subtask = new Subtask(1, "Subtask", "Desc", Status.NEW, 1);
+            taskManager.createSubtask(subtask);
+        });
+    }
+
+    @Test
+    void taskModificationAfterAddingShouldNotAffectManager() {
+        Task task = new Task(1, "Original", "Desc", Status.NEW);
+        taskManager.createTask(task);
+
+        task.setName("Modified");
+        task.setStatus(Status.DONE);
+
+        Task savedTask = taskManager.getTaskById(1);
+        assertEquals("Original", savedTask.getName());
+        assertEquals(Status.NEW, savedTask.getStatus());
     }
 }

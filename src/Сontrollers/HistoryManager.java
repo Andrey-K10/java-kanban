@@ -1,10 +1,10 @@
 package Сontrollers;
 
 import Model.Task;
-
 import java.util.List;
 
 public interface HistoryManager {
-    void add(Task task); // Добавление задачи в историю
-    List<Task> getHistory(); // Получение истории просмотров
+    void add(Task task);
+    void remove(int id);
+    List<Task> getHistory();
 }
