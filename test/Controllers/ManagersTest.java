@@ -1,4 +1,4 @@
-package Сontrollers;
+package Controllers;
 
 import org.junit.jupiter.api.Test;
 

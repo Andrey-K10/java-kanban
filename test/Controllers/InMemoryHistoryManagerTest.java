@@ -1,4 +1,4 @@
-package Сontrollers;
+package Controllers;
 
 import Model.*;
 import org.junit.jupiter.api.*;

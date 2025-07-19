@@ -1,4 +1,4 @@
-package Сontrollers;
+package Controllers;
 
 import Model.Epic;
 import Model.Subtask;

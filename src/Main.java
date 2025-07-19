@@ -2,8 +2,8 @@ import Model.Epic;
 import Model.Status;
 import Model.Subtask;
 import Model.Task;
-import Сontrollers.Managers;
-import Сontrollers.TaskManager;
+import Controllers.Managers;
+import Controllers.TaskManager;
 
 public class Main {
     public static void main(String[] args) {
