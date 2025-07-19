@@ -1,9 +1,9 @@
-package Controllers;
+package controllers;
 
-import Model.Epic;
-import Model.Subtask;
-import Model.Task;
-import Model.Status;
+import model.Epic;
+import model.Subtask;
+import model.Task;
+import model.Status;
 
 import java.util.*;
 
