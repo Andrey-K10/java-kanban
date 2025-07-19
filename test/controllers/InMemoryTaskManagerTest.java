@@ -15,11 +15,11 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createTaskShouldGenerateIdIfZero() {
-        Task task = new Task(0, "Task", "Desc", Status.NEW);
-        int id = taskManager.createTask(task);
+        Task task = new Task(0, "Task", "Description", Status.NEW);
+        int generatedId = taskManager.createTask(task);
 
-        assertNotEquals(0, id);
-        assertEquals(id, task.getId());
+        assertNotEquals(0, generatedId, "Должен быть сгенерирован новый ID");
+        assertEquals(generatedId, taskManager.getTaskById(generatedId).getId());
     }
 
     @Test
