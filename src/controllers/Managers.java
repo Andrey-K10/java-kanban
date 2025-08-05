@@ -1,4 +1,4 @@
-package Сontrollers;
+package controllers;
 
 public class Managers {
 

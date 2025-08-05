@@ -1,4 +1,4 @@
-package Model;
+package model;
 
 public class Subtask extends Task {
     private int epicId; // переменная с одним единственным эпиком

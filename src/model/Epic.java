@@ -1,35 +1,37 @@
-package Model;
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Epic extends Task {
-    private List<Integer> subtaskIds; // id всех подзадач в эпике
+    private final List<Integer> subtaskIds;
 
-    // конструктор эпика
     public Epic(int id, String name, String description) {
         super(id, name, description, Status.NEW);
         this.subtaskIds = new ArrayList<>();
     }
 
-    //геттеры и сеттеры(add)
     public List<Integer> getSubtaskIds() {
-        return subtaskIds;
+        return new ArrayList<>(subtaskIds); // Защитная копия
     }
 
     public void addSubtaskId(int subtaskId) {
-        subtaskIds.add(subtaskId);
+        if (!subtaskIds.contains(subtaskId)) {
+            subtaskIds.add(subtaskId);
+        }
     }
 
-    // удаление ид задачи из списка
     public void removeSubtaskId(int subtaskId) {
         subtaskIds.remove(Integer.valueOf(subtaskId));
     }
 
-    // приводим к одной строке все данные эпика
+    public void clearSubtaskIds() {
+        subtaskIds.clear();
+    }
+
     @Override
     public String toString() {
-        return "Model.Epic{" +
+        return "Epic{" +
                 "id=" + getId() +
                 ", name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
@@ -38,4 +40,3 @@ public class Epic extends Task {
                 '}';
     }
 }
-

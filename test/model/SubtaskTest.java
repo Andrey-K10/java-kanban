@@ -1,7 +1,5 @@
-package Model;
+package model;
 
-import Сontrollers.TaskManager;
-import Сontrollers.Managers;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
