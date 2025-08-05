@@ -20,6 +20,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         return manager;
     }
 
+    public void save() {
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println(CSV_HEADER);
+            saveTasks(writer, new ArrayList<>(tasks.values()));
+            saveTasks(writer, new ArrayList<>(epics.values()));
+            saveTasks(writer, new ArrayList<>(subtasks.values()));
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка сохранения в файл", e);
+        }
+    }
+
     private void loadFromFile() {
         if (!file.exists()) {
             return;
@@ -78,17 +89,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 return new Subtask(id, name, description, status, epicId);
             default:
                 return null;
-        }
-    }
-
-    void save() {
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println(CSV_HEADER);
-            saveTasks(writer, new ArrayList<>(tasks.values()));
-            saveTasks(writer, new ArrayList<>(epics.values()));
-            saveTasks(writer, new ArrayList<>(subtasks.values()));
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка сохранения в файл", e);
         }
     }
 
