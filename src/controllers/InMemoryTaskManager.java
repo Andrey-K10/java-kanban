@@ -4,11 +4,11 @@ import model.*;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final Map<Integer, Task> tasks = new HashMap<>();
-    private final Map<Integer, Subtask> subtasks = new HashMap<>();
-    private final Map<Integer, Epic> epics = new HashMap<>();
-    private int nextId = 1;
-    private final HistoryManager historyManager;
+    protected final Map<Integer, Task> tasks = new HashMap<>();
+    protected final Map<Integer, Subtask> subtasks = new HashMap<>();
+    protected final Map<Integer, Epic> epics = new HashMap<>();
+    protected int nextId = 1;
+    protected final HistoryManager historyManager;
 
     public InMemoryTaskManager() {
         this.historyManager = Managers.getDefaultHistory();
