@@ -81,7 +81,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    protected void save() {
+    void save() {
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println(CSV_HEADER);
             saveTasks(writer, new ArrayList<>(tasks.values()));
