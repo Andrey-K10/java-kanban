@@ -3,8 +3,6 @@ package controllers;
 import model.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
@@ -98,7 +96,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    // Переопределенные методы с автосохранением
     @Override
     public int createTask(Task task) {
         int id = super.createTask(task);
