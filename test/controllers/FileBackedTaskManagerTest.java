@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FileBackedTaskManagerTest {
     private File tempFile;
     private FileBackedTaskManager manager;
+    private int nextId = 1;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -18,6 +19,10 @@ class FileBackedTaskManagerTest {
     @AfterEach
     void tearDown() {
         tempFile.delete();
+    }
+
+    private int generateId() {
+        return nextId++;
     }
 
     @Test
@@ -32,7 +37,7 @@ class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveAndLoadTasks() {
-        Task task = new Task("Test", "Description", Status.NEW);
+        Task task = new Task(generateId(), "Test", "Description", Status.NEW);
         int taskId = manager.createTask(task);
 
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempFile);
@@ -47,9 +52,9 @@ class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveAndLoadEpicWithSubtasks() {
-        Epic epic = new Epic("Epic", "Description");
+        Epic epic = new Epic(generateId(), "Epic", "Description");
         int epicId = manager.createEpic(epic);
-        Subtask subtask = new Subtask("Sub", "Desc", Status.DONE, epicId);
+        Subtask subtask = new Subtask(generateId(), "Sub", "Desc", Status.DONE, epicId);
         manager.createSubtask(subtask);
 
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempFile);
