@@ -1,7 +1,6 @@
 package controllers;
 
 import model.*;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -45,14 +44,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int createTask(Task task) {
-        final Task newTask = new Task(
-                task.getId() == 0 ? nextId++ : task.getId(),
-                task.getName(),
-                task.getDescription(),
-                task.getStatus(),
-                task.getDuration(),
-                task.getStartTime()
-        );
+        Task newTask = new Task(nextId++, task.getName(), task.getDescription(),
+                task.getStatus(), task.getDuration(), task.getStartTime());
         checkOverlaps(newTask);
         tasks.put(newTask.getId(), newTask);
         addToPrioritized(newTask);
@@ -62,14 +55,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
-            Task updatedTask = new Task(
-                    task.getId(),
-                    task.getName(),
-                    task.getDescription(),
-                    task.getStatus(),
-                    task.getDuration(),
-                    task.getStartTime()
-            );
+            Task updatedTask = new Task(task.getId(), task.getName(), task.getDescription(),
+                    task.getStatus(), task.getDuration(), task.getStartTime());
             prioritizedTasks.removeIf(t -> t.getId() == task.getId());
             checkOverlaps(updatedTask);
             tasks.put(updatedTask.getId(), updatedTask);
@@ -109,11 +96,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int createEpic(Epic epic) {
-        Epic newEpic = new Epic(
-                epic.getId() == 0 ? nextId++ : epic.getId(),
-                epic.getName(),
-                epic.getDescription()
-        );
+        Epic newEpic = new Epic(nextId++, epic.getName(), epic.getDescription());
         epics.put(newEpic.getId(), newEpic);
         return newEpic.getId();
     }
@@ -167,19 +150,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int createSubtask(Subtask subtask) {
-        if (!epics.containsKey(subtask.getEpicId())) {
+        if (subtask.getEpicId() == 0 || !epics.containsKey(subtask.getEpicId())) {
             throw new IllegalArgumentException("Epic not found: " + subtask.getEpicId());
         }
 
-        Subtask newSubtask = new Subtask(
-                subtask.getId() == 0 ? nextId++ : subtask.getId(),
-                subtask.getName(),
-                subtask.getDescription(),
-                subtask.getStatus(),
-                subtask.getDuration(),
-                subtask.getStartTime(),
-                subtask.getEpicId()
-        );
+        Subtask newSubtask = new Subtask(nextId++, subtask.getName(), subtask.getDescription(),
+                subtask.getStatus(), subtask.getDuration(),
+                subtask.getStartTime(), subtask.getEpicId());
 
         checkOverlaps(newSubtask);
         subtasks.put(newSubtask.getId(), newSubtask);
@@ -193,17 +170,12 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             Subtask existing = subtasks.get(subtask.getId());
-            Subtask updated = new Subtask(
-                    subtask.getId(),
-                    subtask.getName(),
-                    subtask.getDescription(),
-                    subtask.getStatus(),
-                    subtask.getDuration(),
-                    subtask.getStartTime(),
-                    existing.getEpicId()
-            );
+            Subtask updated = new Subtask(subtask.getId(), subtask.getName(),
+                    subtask.getDescription(), subtask.getStatus(),
+                    subtask.getDuration(), subtask.getStartTime(),
+                    existing.getEpicId());
 
-            prioritizedTasks.removeIf(t -> t.getId() == subtask.getId());
+            prioritizedTasks.remove(existing);
             checkOverlaps(updated);
             subtasks.put(updated.getId(), updated);
             updateEpicStatus(epics.get(updated.getEpicId()));
