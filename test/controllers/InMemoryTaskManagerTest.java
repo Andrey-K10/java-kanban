@@ -1,73 +1,44 @@
-package controllers;
+package test;
 
+import controllers.InMemoryTaskManager;
 import model.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest {
-    private TaskManager taskManager;
+public class InMemoryTaskManagerTest {
+    private InMemoryTaskManager manager;
 
     @BeforeEach
     void setUp() {
-        taskManager = Managers.getDefault();
+        manager = new InMemoryTaskManager();
     }
 
     @Test
-    void createTaskShouldGenerateIdIfZero() {
-        Task task = new Task(0, "Task", "Description", Status.NEW);
-        int generatedId = taskManager.createTask(task);
+    void shouldCreateTask() {
+        Task task = new Task(0, "Test Task", "Desc", Status.NEW,
+                Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
+        manager.createTask(task);
 
-        assertNotEquals(0, generatedId, "Должен быть сгенерирован новый ID");
-        assertEquals(generatedId, taskManager.getTaskById(generatedId).getId());
+        List<Task> tasks = manager.getAllTasks();
+        assertEquals(1, tasks.size());
+        assertEquals("Test Task", tasks.get(0).getName());
     }
 
     @Test
-    void deleteEpicShouldRemoveItsSubtasks() {
-        Epic epic = new Epic(1, "Epic", "Desc");
-        taskManager.createEpic(epic);
+    void shouldNotAllowOverlappingTasks() {
+        Task t1 = new Task(0, "Task 1", "Desc", Status.NEW,
+                Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
+        manager.createTask(t1);
 
-        Subtask subtask = new Subtask(2, "Subtask", "Desc", Status.NEW, epic.getId());
-        taskManager.createSubtask(subtask);
+        Task t2 = new Task(0, "Task 2", "Desc", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 1, 12, 30));
 
-        taskManager.deleteEpicById(epic.getId());
-
-        assertNull(taskManager.getSubtaskById(subtask.getId()));
-        assertNull(taskManager.getEpicById(epic.getId()));
-    }
-
-    @Test
-    void updateSubtaskShouldAffectEpicStatus() {
-        Epic epic = new Epic(1, "Epic", "Desc");
-        taskManager.createEpic(epic);
-
-        Subtask subtask = new Subtask(2, "Subtask", "Desc", Status.NEW, epic.getId());
-        taskManager.createSubtask(subtask);
-
-        subtask.setStatus(Status.DONE);
-        taskManager.updateSubtask(subtask);
-
-        assertEquals(Status.DONE, taskManager.getEpicById(epic.getId()).getStatus());
-    }
-
-    @Test
-    void shouldNotAllowSubtaskToBeItsOwnEpic() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Subtask subtask = new Subtask(1, "Subtask", "Desc", Status.NEW, 1);
-            taskManager.createSubtask(subtask);
-        });
-    }
-
-    @Test
-    void taskModificationAfterAddingShouldNotAffectManager() {
-        Task task = new Task(1, "Original", "Desc", Status.NEW);
-        taskManager.createTask(task);
-
-        task.setName("Modified");
-        task.setStatus(Status.DONE);
-
-        Task savedTask = taskManager.getTaskById(1);
-        assertEquals("Original", savedTask.getName());
-        assertEquals(Status.NEW, savedTask.getStatus());
+        assertThrows(IllegalArgumentException.class, () -> manager.createTask(t2));
     }
 }

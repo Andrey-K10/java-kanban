@@ -1,8 +1,11 @@
 package controllers;
 
 import model.*;
+
 import java.io.*;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
@@ -19,14 +22,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void load() {
         try {
+            if (!file.exists() || Files.size(file.toPath()) == 0) {
+                return;
+            }
             String content = Files.readString(file.toPath());
             if (content.isEmpty()) {
                 return;
             }
 
             String[] lines = content.split("\n");
+            // первая строка — заголовок
             for (int i = 1; i < lines.length; i++) {
-                Task task = fromString(lines[i]);
+                String line = lines[i].trim();
+                if (line.isEmpty()) continue;
+                Task task = fromString(line);
                 if (task != null) {
                     switch (task.getType()) {
                         case TASK:
@@ -48,7 +57,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     protected void save() {
         try (Writer writer = new FileWriter(file)) {
-            writer.write("id,type,name,status,description,epic\n");
+            // duration и startTime
+            writer.write("id,type,name,status,description,duration,startTime,epic\n");
 
             for (Task task : getAllTasks()) {
                 writer.write(toString(task) + "\n");
@@ -65,38 +75,62 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static String toString(Task task) {
+        String epicId = "";
+        if (task instanceof Subtask) {
+            epicId = String.valueOf(((Subtask) task).getEpicId());
+        }
+
+        String durationMinutes = task.getDuration() == null ? "" : String.valueOf(task.getDuration().toMinutes());
+        String start = task.getStartTime() == null ? "" : task.getStartTime().toString();
+
         return String.join(",",
                 String.valueOf(task.getId()),
                 task.getType().name(),
-                task.getName(),
+                escape(task.getName()),
                 task.getStatus().name(),
-                task.getDescription(),
-                task.getType() == TaskType.SUBTASK ? String.valueOf(((Subtask) task).getEpicId()) : ""
+                escape(task.getDescription()),
+                durationMinutes,
+                start,
+                epicId
         );
     }
 
+    private static String escape(String s) {
+        return s == null ? "" : s.replace("\n", " ").replace("\r", " ");
+    }
+
     private static Task fromString(String value) {
-        String[] parts = value.split(",");
+        String[] parts = value.split(",", -1); // сохраняем пустые хвосты
         int id = Integer.parseInt(parts[0]);
         TaskType type = TaskType.valueOf(parts[1]);
         String name = parts[2];
         Status status = Status.valueOf(parts[3]);
         String description = parts.length > 4 ? parts[4] : "";
 
+        Duration duration = null;
+        if (parts.length > 5 && !parts[5].isBlank()) {
+            duration = Duration.ofMinutes(Long.parseLong(parts[5]));
+        }
+        LocalDateTime startTime = null;
+        if (parts.length > 6 && !parts[6].isBlank()) {
+            startTime = LocalDateTime.parse(parts[6]);
+        }
+
         switch (type) {
             case TASK:
-                return new Task(id, name, description, status);
+                return new Task(id, name, description, status, duration, startTime);
             case EPIC:
+                // duration/startTime у эпика будут вычислены на основе подзадач
                 return new Epic(id, name, description);
             case SUBTASK:
-                int epicId = parts.length > 5 ? Integer.parseInt(parts[5]) : 0;
-                return new Subtask(id, name, description, status, epicId);
+                int epicId = parts.length > 7 && !parts[7].isBlank() ? Integer.parseInt(parts[7]) : 0;
+                return new Subtask(id, name, description, status, duration, startTime, epicId);
             default:
                 return null;
         }
     }
 
-    @Override
+        @Override
     public int createTask(Task task) {
         int id = super.createTask(task);
         save();
