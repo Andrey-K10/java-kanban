@@ -25,17 +25,14 @@ public class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveAndLoadTasks() {
-        // Создаем обычную задачу
-        Task task = new Task("Task 1", "Desc", Status.NEW,
+        Task task = new Task(0, "Task 1", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
         manager.createTask(task);
 
-        // Создаем эпик
-        Epic epic = new Epic("Epic 1", "Desc");
+        Epic epic = new Epic(0, "Epic 1", "Desc");
         manager.createEpic(epic);
 
-        // Создаем подзадачу, связав с эпиком через epic.getId()
-        Subtask sub = new Subtask("Subtask 1", "Desc", Status.NEW,
+        Subtask sub = new Subtask(0, "Subtask 1", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epic.getId());
         manager.createSubtask(sub);
 
