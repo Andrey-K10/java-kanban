@@ -3,8 +3,8 @@ package test;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import controllers.InMemoryTaskManager;  // Исправленный импорт
-import controllers.TaskManager;         // Исправленный импорт
+import controllers.InMemoryTaskManager;
+import controllers.TaskManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class TaskManagerTest {
 
     @Test
     void shouldCreateTask() {
-        Task task = new Task(0, "Test Task", "Desc", Status.NEW,
+        Task task = new Task("Test Task", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
         manager.createTask(task);
 
@@ -33,7 +33,7 @@ public class TaskManagerTest {
 
     @Test
     void shouldCreateEpicWithoutSubtasks() {
-        Epic epic = new Epic(0, "Epic 1", "Desc");
+        Epic epic = new Epic("Epic 1", "Desc");
         manager.createEpic(epic);
 
         List<Task> tasks = manager.getAllTasks();
@@ -48,12 +48,12 @@ public class TaskManagerTest {
 
     @Test
     void shouldCalculateEpicTimeFromSubtasks() {
-        Epic epic = new Epic(0, "Epic 1", "Desc");
+        Epic epic = new Epic("Epic 1", "Desc");
         manager.createEpic(epic);
 
-        Subtask s1 = new Subtask(0, "Subtask 1", "Desc", Status.NEW,
+        Subtask s1 = new Subtask("Subtask 1", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 1, 10, 0), epic.getId());
-        Subtask s2 = new Subtask(0, "Subtask 2", "Desc", Status.NEW,
+        Subtask s2 = new Subtask("Subtask 2", "Desc", Status.NEW,
                 Duration.ofMinutes(90), LocalDateTime.of(2025, 1, 1, 12, 0), epic.getId());
 
         manager.createSubtask(s1);
@@ -70,26 +70,26 @@ public class TaskManagerTest {
 
     @Test
     void shouldSortPrioritizedTasks() {
-        Task t1 = new Task(0, "Task 1", "Desc", Status.NEW,
+        Task t1 = new Task("Task 1", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 1, 15, 0));
-        Task t2 = new Task(0, "Task 2", "Desc", Status.NEW,
+        Task t2 = new Task("Task 2", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 1, 10, 0));
 
         manager.createTask(t1);
         manager.createTask(t2);
 
         List<Task> prioritized = manager.getPrioritizedTasks();
-        assertEquals(t2.getId(), prioritized.get(0).getId()); // t2 раньше
-        assertEquals(t1.getId(), prioritized.get(1).getId()); // t1 позже
+        assertEquals(t2.getStartTime(), prioritized.get(0).getStartTime());
+        assertEquals(t1.getStartTime(), prioritized.get(1).getStartTime());
     }
 
     @Test
     void shouldNotAllowOverlappingTasks() {
-        Task t1 = new Task(0, "Task 1", "Desc", Status.NEW,
+        Task t1 = new Task("Task 1", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
         manager.createTask(t1);
 
-        Task t2 = new Task(0, "Task 2", "Desc", Status.NEW,
+        Task t2 = new Task("Task 2", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 1, 12, 30));
 
         assertThrows(IllegalArgumentException.class, () -> manager.createTask(t2));

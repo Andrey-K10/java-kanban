@@ -5,7 +5,6 @@ import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -21,23 +20,27 @@ public class FileBackedTaskManagerTest {
     @BeforeEach
     void setUp() throws Exception {
         tempFile = Files.createTempFile("tasks", ".csv");
-        manager = new FileBackedTaskManager(tempFile.toFile());  // Конвертация Path в File
+        manager = new FileBackedTaskManager(tempFile.toFile());
     }
 
     @Test
     void shouldSaveAndLoadTasks() {
-        Task task = new Task(0, "Task 1", "Desc", Status.NEW,
+        // Создаем обычную задачу
+        Task task = new Task("Task 1", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
         manager.createTask(task);
 
-        Epic epic = new Epic(0, "Epic 1", "Desc");
+        // Создаем эпик
+        Epic epic = new Epic("Epic 1", "Desc");
         manager.createEpic(epic);
 
-        Subtask sub = new Subtask(0, "Subtask 1", "Desc", Status.NEW,
+        // Создаем подзадачу, связав с эпиком через epic.getId()
+        Subtask sub = new Subtask("Subtask 1", "Desc", Status.NEW,
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epic.getId());
         manager.createSubtask(sub);
 
-        FileBackedTaskManager reloaded = new FileBackedTaskManager(tempFile.toFile());  // Конвертация Path в File
+        // Загружаем из файла
+        FileBackedTaskManager reloaded = new FileBackedTaskManager(tempFile.toFile());
 
         List<Task> tasks = reloaded.getAllTasks();
         assertEquals(3, tasks.size());
