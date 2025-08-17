@@ -5,6 +5,7 @@ import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -20,7 +21,7 @@ public class FileBackedTaskManagerTest {
     @BeforeEach
     void setUp() throws Exception {
         tempFile = Files.createTempFile("tasks", ".csv");
-        manager = new FileBackedTaskManager(tempFile);
+        manager = new FileBackedTaskManager(tempFile.toFile());  // Конвертация Path в File
     }
 
     @Test
@@ -36,7 +37,7 @@ public class FileBackedTaskManagerTest {
                 Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epic.getId());
         manager.createSubtask(sub);
 
-        FileBackedTaskManager reloaded = new FileBackedTaskManager(tempFile);
+        FileBackedTaskManager reloaded = new FileBackedTaskManager(tempFile.toFile());  // Конвертация Path в File
 
         List<Task> tasks = reloaded.getAllTasks();
         assertEquals(3, tasks.size());

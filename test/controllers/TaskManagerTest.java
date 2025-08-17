@@ -3,8 +3,8 @@ package test;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.InMemoryTaskManager;
-import service.TaskManager;
+import controllers.InMemoryTaskManager;  // Исправленный импорт
+import controllers.TaskManager;         // Исправленный импорт
 
 import java.time.Duration;
 import java.time.LocalDateTime;
