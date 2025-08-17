@@ -3,9 +3,9 @@ package controllers;
 import model.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.List;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.*;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
@@ -16,17 +16,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public static FileBackedTaskManager loadFromFile(File file) {
         FileBackedTaskManager manager = new FileBackedTaskManager(file);
-        manager.load();
-        return manager;
-    }
-
-    private void load() {
         try {
-            if (!file.exists() || Files.size(file.toPath()) == 0) return;
+            if (!file.exists() || Files.size(file.toPath()) == 0) {
+                return manager;
+            }
 
             List<String> lines = Files.readAllLines(file.toPath());
-            if (lines.size() <= 1) return;
+            if (lines.size() <= 1) {
+                return manager;
+            }
 
+            // Первый проход - создаем все задачи
             for (int i = 1; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
                 if (line.isEmpty()) continue;
@@ -34,43 +34,55 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 Task task = fromString(line);
                 if (task == null) continue;
 
-                if (task.getId() >= nextId) {
-                    nextId = task.getId() + 1;
+                if (task.getId() >= manager.nextId) {
+                    manager.nextId = task.getId() + 1;
                 }
 
                 switch (task.getType()) {
                     case TASK:
-                        tasks.put(task.getId(), task);
-                        addToPrioritized(task);
+                        manager.tasks.put(task.getId(), task);
                         break;
                     case EPIC:
-                        epics.put(task.getId(), (Epic) task);
+                        manager.epics.put(task.getId(), (Epic) task);
                         break;
                     case SUBTASK:
-                        Subtask subtask = (Subtask) task;
-                        subtasks.put(subtask.getId(), subtask);
-                        if (epics.containsKey(subtask.getEpicId())) {
-                            epics.get(subtask.getEpicId()).addSubtaskId(subtask.getId());
-                        }
-                        addToPrioritized(subtask);
+                        manager.subtasks.put(task.getId(), (Subtask) task);
                         break;
                 }
             }
 
-            epics.values().forEach(this::updateEpicStatus);
+            // Второй проход - устанавливаем связи
+            for (Subtask subtask : manager.subtasks.values()) {
+                if (manager.epics.containsKey(subtask.getEpicId())) {
+                    manager.epics.get(subtask.getEpicId()).addSubtaskId(subtask.getId());
+                    manager.addToPrioritized(subtask);
+                }
+            }
+
+            // Восстанавливаем prioritizedTasks для обычных задач
+            for (Task task : manager.tasks.values()) {
+                manager.addToPrioritized(task);
+            }
+
+            // Обновляем статусы эпиков
+            manager.epics.values().forEach(manager::updateEpicStatus);
+
         } catch (IOException e) {
             throw new ManagerSaveException("Error loading from file", e);
         }
+        return manager;
     }
 
     protected void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write("id,type,name,status,description,duration,startTime,epic\n");
 
+            // Сохраняем задачи
             for (Task task : getAllTasks()) {
                 writer.write(toString(task));
                 writer.newLine();
             }
+
         } catch (IOException e) {
             throw new ManagerSaveException("Error saving to file", e);
         }
@@ -99,7 +111,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private static String escape(String value) {
-        return value == null ? "" : value.replace(",", "\\,").replace("\n", "\\n");
+        if (value == null) return "";
+        return value.replace(",", "\\,").replace("\n", "\\n");
     }
 
     private static Task fromString(String value) {

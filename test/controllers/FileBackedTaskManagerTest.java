@@ -25,19 +25,22 @@ public class FileBackedTaskManagerTest {
 
     @Test
     void shouldSaveAndLoadTasks() {
-        Task task = new Task(0, "Task 1", "Desc", Status.NEW,
+        // Сначала создаем эпик
+        Epic epic = new Epic(0, "Epic 1", "Description");
+        int epicId = manager.createEpic(epic);
+
+        // Затем создаем подзадачу с правильным epicId
+        Subtask sub = new Subtask(0, "Subtask 1", "Description", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epicId);
+        manager.createSubtask(sub);
+
+        // Создаем обычную задачу
+        Task task = new Task(0, "Task 1", "Description", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
         manager.createTask(task);
 
-        Epic epic = new Epic(0, "Epic 1", "Desc");
-        manager.createEpic(epic);
-
-        Subtask sub = new Subtask(0, "Subtask 1", "Desc", Status.NEW,
-                Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epic.getId());
-        manager.createSubtask(sub);
-
         // Загружаем из файла
-        FileBackedTaskManager reloaded = new FileBackedTaskManager(tempFile.toFile());
+        FileBackedTaskManager reloaded = FileBackedTaskManager.loadFromFile(tempFile.toFile());
 
         List<Task> tasks = reloaded.getAllTasks();
         assertEquals(3, tasks.size());
