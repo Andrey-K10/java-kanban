@@ -20,6 +20,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
+    @DisplayName("Создание задачи: должна успешно создаваться и добавляться в менеджер")
     void shouldCreateTask() {
         Task task = new Task(0, "Test Task", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
@@ -31,6 +32,7 @@ public class InMemoryTaskManagerTest {
     }
 
     @Test
+    @DisplayName("Проверка пересечения задач: должна выбрасываться ошибка при наложении временных интервалов")
     void shouldNotAllowOverlappingTasks() {
         Task t1 = new Task(0, "Task 1", "Desc", Status.NEW,
                 Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));

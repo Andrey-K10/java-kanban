@@ -89,7 +89,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private String toString(Task task) {
-        String epicId = task instanceof Subtask ?
+        String epicId = task.getType() == TaskType.SUBTASK ?
                 String.valueOf(((Subtask) task).getEpicId()) : "";
 
         String duration = task.getDuration() != null ?

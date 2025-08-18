@@ -275,15 +275,32 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     protected void checkOverlaps(Task newTask) {
-        if (newTask.getStartTime() == null) return;
+        if (newTask.getStartTime() == null || newTask.getDuration() == null) {
+            return;
+        }
 
         boolean hasOverlap = prioritizedTasks.stream()
                 .anyMatch(existing -> existing.getId() != newTask.getId()
                         && isOverlapping(newTask, existing));
 
         if (hasOverlap) {
-            throw new IllegalArgumentException(
-                    "Task overlaps with existing task");
+            Task conflictingTask = prioritizedTasks.stream()
+                    .filter(existing -> existing.getId() != newTask.getId()
+                            && isOverlapping(newTask, existing))
+                    .findFirst()
+                    .orElse(null);
+
+            throw new IllegalArgumentException(String.format(
+                    "Задача %d ('%s', %s - %s) пересекается по времени с задачей %d ('%s', %s - %s)",
+                    newTask.getId(),
+                    newTask.getName(),
+                    newTask.getStartTime(),
+                    newTask.getEndTime(),
+                    conflictingTask != null ? conflictingTask.getId() : 0,
+                    conflictingTask != null ? conflictingTask.getName() : "unknown",
+                    conflictingTask != null ? conflictingTask.getStartTime() : null,
+                    conflictingTask != null ? conflictingTask.getEndTime() : null
+            ));
         }
     }
 }
