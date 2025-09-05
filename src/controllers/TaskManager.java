@@ -52,4 +52,7 @@ public interface TaskManager {
     void updateEpicStatus(Epic epic);
 
     List<Task> getHistory();
+
+    // НОВЫЙ метод — список задач по приоритету (startTime)
+    List<Task> getPrioritizedTasks();
 }

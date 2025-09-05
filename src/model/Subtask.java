@@ -1,15 +1,22 @@
 package model;
 
-public class Subtask extends Task {
-    private int epicId; // переменная с одним единственным эпиком
+import java.time.Duration;
+import java.time.LocalDateTime;
 
-    // конструктор для подзадачи
+public class Subtask extends Task {
+    private int epicId; // ссылка на эпик
+
     public Subtask(int id, String name, String description, Status status, int epicId) {
         super(id, name, description, status);
         this.epicId = epicId;
     }
 
-    // геттеры и сеттеры
+    public Subtask(int id, String name, String description, Status status,
+                   Duration duration, LocalDateTime startTime, int epicId) {
+        super(id, name, description, status, duration, startTime);
+        this.epicId = epicId;
+    }
+
     public int getEpicId() {
         return epicId;
     }
@@ -18,7 +25,6 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
-    // приводим к одной стркое все данные по подзадаче
     @Override
     public String toString() {
         return "Model.Subtask{" +
@@ -27,6 +33,9 @@ public class Subtask extends Task {
                 ", description='" + getDescription() + '\'' +
                 ", status=" + getStatus() +
                 ", epicId=" + epicId +
+                ", duration=" + (getDuration() == null ? "null" : getDuration().toMinutes() + "m") +
+                ", startTime=" + getStartTime() +
+                ", endTime=" + getEndTime() +
                 '}';
     }
 
@@ -35,5 +44,3 @@ public class Subtask extends Task {
         return TaskType.SUBTASK;
     }
 }
-
-

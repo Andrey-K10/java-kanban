@@ -1,10 +1,8 @@
 package controllers;
 
 import model.Task;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private static class Node {
@@ -13,9 +11,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         Node next;
 
         Node(Task task, Node prev, Node next) {
-            // Создаем копию задачи для иммутабельности
+            // создаём КОПИЮ задачи, включая новые поля
             this.task = new Task(task.getId(), task.getName(),
-                    task.getDescription(), task.getStatus());
+                    task.getDescription(), task.getStatus(),
+                    task.getDuration(), task.getStartTime());
             this.prev = prev;
             this.next = next;
         }
@@ -27,23 +26,15 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        if (task == null) {
-            return;
-        }
-
-        // Удаляем существующую ноду, если задача уже есть в истории
+        if (task == null) return;
         remove(task.getId());
-
-        // Добавляем задачу в конец списка
         linkLast(task);
     }
 
     @Override
     public void remove(int id) {
         Node node = nodeMap.remove(id);
-        if (node != null) {
-            removeNode(node);
-        }
+        if (node != null) removeNode(node);
     }
 
     @Override
@@ -53,34 +44,19 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private void linkLast(Task task) {
         final Node newNode = new Node(task, tail, null);
-        if (tail == null) {
-            head = newNode;
-        } else {
-            tail.next = newNode;
-        }
+        if (tail == null) head = newNode;
+        else tail.next = newNode;
         tail = newNode;
         nodeMap.put(task.getId(), newNode);
     }
 
     private void removeNode(Node node) {
-        if (node == null) {
-            return;
-        }
+        if (node.prev != null) node.prev.next = node.next;
+        else head = node.next;
 
-        // Обновляем ссылки соседних узлов
-        if (node.prev != null) {
-            node.prev.next = node.next;
-        } else {
-            head = node.next;
-        }
+        if (node.next != null) node.next.prev = node.prev;
+        else tail = node.prev;
 
-        if (node.next != null) {
-            node.next.prev = node.prev;
-        } else {
-            tail = node.prev;
-        }
-
-        // Очищаем ссылки удаляемого узла
         node.prev = null;
         node.next = null;
     }

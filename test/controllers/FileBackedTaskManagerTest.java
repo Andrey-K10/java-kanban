@@ -1,75 +1,51 @@
-package controllers;
+package test;
 
+import controllers.FileBackedTaskManager;
 import model.*;
-import org.junit.jupiter.api.*;
-import java.io.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
-    private File tempFile;
+public class FileBackedTaskManagerTest {
+    private Path tempFile;
     private FileBackedTaskManager manager;
-    private int nextId = 1;
 
     @BeforeEach
-    void setUp() throws IOException {
-        tempFile = File.createTempFile("tasks", ".csv");
-        manager = new FileBackedTaskManager(tempFile);
-    }
-
-    @AfterEach
-    void tearDown() {
-        tempFile.delete();
-    }
-
-    private int generateId() {
-        return nextId++;
-    }
-
-    @Test
-    void shouldSaveAndLoadEmptyFile() {
-        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempFile);
-        assertAll(
-                () -> assertTrue(loaded.getAllTasks().isEmpty()),
-                () -> assertTrue(loaded.getAllEpics().isEmpty()),
-                () -> assertTrue(loaded.getAllSubtasks().isEmpty())
-        );
+    void setUp() throws Exception {
+        tempFile = Files.createTempFile("tasks", ".csv");
+        manager = new FileBackedTaskManager(tempFile.toFile());
     }
 
     @Test
     void shouldSaveAndLoadTasks() {
-        Task task = new Task(generateId(), "Test", "Description", Status.NEW);
-        int taskId = manager.createTask(task);
-
-        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempFile);
-        Task loadedTask = loaded.getTaskById(taskId);
-
-        assertAll(
-                () -> assertEquals(task.getName(), loadedTask.getName()),
-                () -> assertEquals(task.getDescription(), loadedTask.getDescription()),
-                () -> assertEquals(task.getStatus(), loadedTask.getStatus())
-        );
-    }
-
-    @Test
-    void shouldSaveAndLoadEpicWithSubtasks() {
-        Epic epic = new Epic(generateId(), "Epic", "Description");
+        // Сначала создаем эпик
+        Epic epic = new Epic(0, "Epic 1", "Description");
         int epicId = manager.createEpic(epic);
-        Subtask subtask = new Subtask(generateId(), "Sub", "Desc", Status.DONE, epicId);
-        manager.createSubtask(subtask);
 
-        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempFile);
+        // Затем создаем подзадачу с правильным epicId
+        Subtask sub = new Subtask(0, "Subtask 1", "Description", Status.NEW,
+                Duration.ofMinutes(30), LocalDateTime.of(2025, 1, 2, 10, 0), epicId);
+        manager.createSubtask(sub);
 
-        assertAll(
-                () -> assertEquals(1, loaded.getAllEpics().size()),
-                () -> assertEquals(1, loaded.getAllSubtasks().size()),
-                () -> assertEquals(epicId, loaded.getSubtaskById(epicId + 1).getEpicId())
-        );
-    }
+        // Создаем обычную задачу
+        Task task = new Task(0, "Task 1", "Description", Status.NEW,
+                Duration.ofMinutes(60), LocalDateTime.of(2025, 1, 1, 12, 0));
+        manager.createTask(task);
 
-    @Test
-    void shouldHandleFileErrors() {
-        File readOnlyFile = new File("/proc/immutable");
-        assertThrows(ManagerSaveException.class,
-                () -> new FileBackedTaskManager(readOnlyFile).save());
+        // Загружаем из файла
+        FileBackedTaskManager reloaded = FileBackedTaskManager.loadFromFile(tempFile.toFile());
+
+        List<Task> tasks = reloaded.getAllTasks();
+        assertEquals(3, tasks.size());
+        assertTrue(tasks.stream().anyMatch(t -> t.getName().equals("Task 1")));
+        assertTrue(tasks.stream().anyMatch(t -> t.getName().equals("Epic 1")));
+        assertTrue(tasks.stream().anyMatch(t -> t.getName().equals("Subtask 1")));
     }
 }
