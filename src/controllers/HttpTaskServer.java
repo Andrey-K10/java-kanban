@@ -1,5 +1,7 @@
 package controllers;
 
+import Adapters.DurationAdapter;
+import Adapters.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;

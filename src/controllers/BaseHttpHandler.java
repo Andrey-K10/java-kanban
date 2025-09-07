@@ -1,10 +1,8 @@
 package controllers;
 
 import com.google.gson.Gson;
-//import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-//import model.Task;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
